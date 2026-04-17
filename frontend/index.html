@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Insights Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Expense Insights Dashboard</h1>
+    <p class="subtitle">Import transaction files, review them, and track spending patterns over time.</p>
+  </header>
+
+  <main>
+    <!-- Import Section -->
+    <section id="import-section" class="card full-width">
+      <h2>Import Transactions</h2>
+      <div class="import-controls">
+        <input type="file" id="file-input" accept=".xlsx,.xls">
+        <div class="button-group">
+          <button id="preview-btn" disabled>Preview Import</button>
+          <button id="confirm-btn" disabled>Confirm Import</button>
+        </div>
+      </div>
+      <div id="status-message" class="status-message" hidden></div>
+    </section>
+
+    <!-- Preview Section -->
+    <section id="preview-section" class="card full-width" hidden>
+      <div class="section-header">
+        <h2>Preview</h2>
+        <button id="close-preview-btn" class="close-preview-btn">Close Preview</button>
+      </div>
+      <div class="preview-info">
+        <p><strong>File:</strong> <span id="preview-filename"></span></p>
+        <p><strong>Skipped rows:</strong> <span id="preview-skipped"></span></p>
+        <p><strong>Parsed transactions:</strong> <span id="preview-count"></span></p>
+      </div>
+      <div class="table-wrapper">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Merchant</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Currency</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Two-column dashboard area -->
+    <div id="dashboard-area" class="dashboard-grid" hidden>
+
+      <!-- Left column: imports list -->
+      <section id="imports-section" class="card">
+        <h2>Imports</h2>
+        <div class="scope-controls">
+          <button id="scope-latest-btn" class="scope-btn active">Latest</button>
+          <button id="scope-all-btn" class="scope-btn">All</button>
+        </div>
+        <div id="imports-list"></div>
+      </section>
+
+      <!-- Right column: dashboard content -->
+      <div class="dashboard-content">
+        <!-- Stats row -->
+        <section id="dashboard-section" class="card">
+          <div class="section-header">
+            <h2>Overview</h2>
+            <span id="dash-scope-label" class="scope-label"></span>
+          </div>
+          <div class="dashboard-stats">
+            <div class="stat-box">
+              <span class="stat-label">Total Transactions</span>
+              <span class="stat-value" id="dash-total-transactions">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Total Amount</span>
+              <span class="stat-value" id="dash-total-amount">0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sub-grid: category + alerts side by side -->
+        <div class="dashboard-panels">
+          <section id="category-section" class="card">
+            <h2>Spending by Category</h2>
+            <div class="table-wrapper">
+              <table id="category-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="alerts-section" class="card">
+            <h2>Recurring Charge Alerts</h2>
+            <p class="section-note">Based on all imported transaction history</p>
+            <div id="alerts-list">
+              <p class="empty-state">No recurring charge anomalies found.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions table full width -->
+    <section id="transactions-section" class="card full-width" hidden>
+      <div class="section-header">
+        <h2>Transactions</h2>
+        <span id="tx-scope-label" class="scope-label"></span>
+      </div>
+      <div class="table-wrapper">
+        <table id="transactions-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Merchant</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Currency</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
