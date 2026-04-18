@@ -1,3 +1,4 @@
+console.log("SCRIPT LOADED");
 const API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8000"
@@ -13,7 +14,6 @@ let currentScope = "latest";
 // ── DOM refs ─────────────────────────────────────────────
 
 const fileInput = document.getElementById("file-input");
-const previewBtn = document.getElementById("preview-btn");
 const confirmBtn = document.getElementById("confirm-btn");
 const statusEl = document.getElementById("status-message");
 
@@ -105,15 +105,18 @@ scopeAllBtn.addEventListener("click", () => setScope("all"));
 
 // ── Event listeners (upload flow) ────────────────────────
 
-fileInput.addEventListener("change", () => {
-  previewBtn.disabled = !fileInput.files.length;
-  confirmBtn.disabled = true;
+fileInput.addEventListener("change", async () => {
+  const hasFile = fileInput.files && fileInput.files.length > 0;
+
   previewData = null;
   previewSection.hidden = true;
+  confirmBtn.disabled = true;
+  clearTable(previewTableBody);
   hideStatus();
+
+  await handlePreview();
 });
 
-previewBtn.addEventListener("click", handlePreview);
 confirmBtn.addEventListener("click", handleConfirm);
 closePreviewBtn.addEventListener("click", () => {
   previewData = null;
@@ -129,7 +132,6 @@ async function handlePreview() {
   const file = fileInput.files[0];
   if (!file) return;
 
-  previewBtn.disabled = true;
   confirmBtn.disabled = true;
   showStatus("Uploading and parsing file…", "info");
 
@@ -155,8 +157,6 @@ async function handlePreview() {
     showStatus(`Preview failed: ${err.message}`, "error");
     previewSection.hidden = true;
     previewData = null;
-  } finally {
-    previewBtn.disabled = !fileInput.files.length;
   }
 }
 
@@ -186,7 +186,6 @@ async function handleConfirm() {
   if (!previewData) return;
 
   confirmBtn.disabled = true;
-  previewBtn.disabled = true;
   showStatus("Confirming import…", "info");
 
   try {
@@ -214,7 +213,6 @@ async function handleConfirm() {
     previewData = null;
     previewSection.hidden = true;
     fileInput.value = "";
-    previewBtn.disabled = true;
     confirmBtn.disabled = true;
 
     await loadImports();
@@ -225,8 +223,6 @@ async function handleConfirm() {
   } catch (err) {
     showStatus(`Import failed: ${err.message}`, "error");
     confirmBtn.disabled = false;
-  } finally {
-    previewBtn.disabled = !fileInput.files.length;
   }
 }
 
