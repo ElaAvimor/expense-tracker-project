@@ -1,0 +1,8 @@
+.idea/
+backend/.venv/
+backend/venv/
+**/__pycache__/
+*.pyc
+backend/.env
+backend/test.db
+.firebase
