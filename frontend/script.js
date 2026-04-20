@@ -234,7 +234,7 @@ async function loadImports() {
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     importsList = await res.json();
     renderImportsList();
-    dashboardArea.hidden = importsList.length === 0;
+    dashboardArea.hidden = false // importsList.length === 0;
   } catch (err) {
     console.error("Failed to load imports:", err);
   }
