@@ -6,35 +6,34 @@
   padding: 0;
 }
 
+:root {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --surface-muted: #f7f9fc;
+  --border: #d9e1ea;
+
+  --text: #1f2937;
+  --text-soft: #5b6676;
+  --text-faint: #8a94a6;
+
+  --primary: #1d4f91;
+  --primary-hover: #163e72;
+
+  --success: #0f9f75;
+  --success-hover: #0b7f5d;
+
+  --row-hover: #f5f8fb;
+}
+
+/* ── Base ───────────────────────────────────────────── */
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f0f2f5;
-  color: #2d3436;
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
   padding: 0 1rem 3rem;
 }
-
-/* ── Header ─────────────────────────────────────────── */
-
-header {
-  text-align: center;
-  padding: 2.5rem 0 1.5rem;
-}
-
-header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #0984e3;
-}
-
-.subtitle {
-  margin-top: 0.35rem;
-  margin-bottom: 0.4rem;
-  font-size: 0.95rem;
-  color: #636e72;
-}
-
-/* ── Main layout ────────────────────────────────────── */
 
 main {
   max-width: 1180px;
@@ -48,34 +47,55 @@ main {
   width: 100%;
 }
 
-/* ── Card ───────────────────────────────────────────── */
-
 .container {
   max-width: 1180px;
 }
 
+/* ── Header ─────────────────────────────────────────── */
+
+header {
+  text-align: center;
+  padding: 1.75rem 0 1.1rem;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin-top: 0.35rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+
 .card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045);
 }
 
 .card h2 {
   font-size: 1.05rem;
   margin-bottom: 0.85rem;
-  color: #2d3436;
+  color: var(--text);
   font-weight: 700;
 }
 
 .card h3 {
   font-size: 0.95rem;
   margin: 1.25rem 0 0.75rem;
-  color: #636e72;
+  color: var(--text-soft);
 }
 
-/* ── Section header with scope label ────────────────── */
+/* ── Shared section header / labels ─────────────────── */
 
 .section-header {
   display: flex;
@@ -90,14 +110,14 @@ main {
 
 .scope-label {
   font-size: 0.8rem;
-  color: #636e72;
+  color: var(--text-soft);
   font-weight: 500;
-  background: #f0f2f5;
+  background: var(--surface-muted);
   padding: 0.15rem 0.6rem;
   border-radius: 10px;
 }
 
-/* ── Import controls ────────────────────────────────── */
+/* ── Import section ─────────────────────────────────── */
 
 .import-controls {
   display: flex;
@@ -157,22 +177,59 @@ button:active:not(:disabled) {
   transform: scale(0.97);
 }
 
-#preview-btn {
-  background: #0984e3;
-  color: #fff;
-}
-
-#preview-btn:hover:not(:disabled) {
-  background: #0770c2;
-}
-
 #confirm-btn {
-  background: #00b894;
+  background: var(--success);
   color: #fff;
 }
 
 #confirm-btn:hover:not(:disabled) {
-  background: #00a381;
+  background: var(--success-hover);
+}
+
+/* ── Status messages ────────────────────────────────── */
+
+.status-message {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.status-message.info {
+  background: #e8eef3;
+  color: #2d3436;
+}
+
+.status-message.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-message.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ── Preview section ────────────────────────────────── */
+
+.close-preview-btn {
+  margin-left: auto;
+  padding: 0.45rem 0.9rem;
+  background: #dfe6e9;
+  color: #636e72;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.close-preview-btn:hover {
+  background: #b2bec3;
+  color: #2d3436;
+}
+
+.preview-info p {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
 }
 
 /* ── Scope controls ─────────────────────────────────── */
@@ -185,25 +242,25 @@ button:active:not(:disabled) {
 
 .scope-btn {
   padding: 0.35rem 0.85rem;
-  background: #f0f2f5;
-  color: #636e72;
-  border: 1px solid #dfe6e9;
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .scope-btn:hover {
-  background: #dfe6e9;
+  background: #eef3f8;
 }
 
 .scope-btn.active {
-  background: #0984e3;
+  background: var(--primary);
   color: #fff;
-  border-color: #0984e3;
+  border-color: var(--primary);
 }
 
-/* ── Dashboard grid (2-column layout) ───────────────── */
+/* ── Dashboard layout ───────────────────────────────── */
 
 .dashboard-grid {
   display: grid;
@@ -247,12 +304,12 @@ button:active:not(:disabled) {
 }
 
 .import-item:hover {
-  background: #f0f2f5;
+  background: var(--surface-muted);
 }
 
 .import-item.selected {
-  background: #ebf5fb;
-  border-left-color: #0984e3;
+  background: #edf4ff;
+  border-left-color: var(--primary);
 }
 
 .import-info {
@@ -290,62 +347,14 @@ button:active:not(:disabled) {
 .import-name {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #2d3436;
+  color: var(--text);
 }
 
 .import-date {
   font-size: 0.75rem;
-  color: #b2bec3;
+  color: var(--text-faint);
   white-space: nowrap;
   margin-left: 0.75rem;
-}
-
-/* ── Status message ─────────────────────────────────── */
-
-.status-message {
-  margin-top: 0.75rem;
-  padding: 0.7rem 0.95rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-}
-
-.status-message.info {
-  background: #e8eef3;
-  color: #2d3436;
-}
-
-.status-message.success {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-message.error {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-/* ── Close preview button ───────────────────────────── */
-
-.close-preview-btn {
-  margin-left: auto;
-  padding: 0.45rem 0.9rem;
-  background: #dfe6e9;
-  color: #636e72;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-radius: 10px;
-}
-
-.close-preview-btn:hover {
-  background: #b2bec3;
-  color: #2d3436;
-}
-
-/* ── Preview info ───────────────────────────────────── */
-
-.preview-info p {
-  font-size: 0.95rem;
-  margin-bottom: 0.3rem;
 }
 
 /* ── Dashboard stats ────────────────────────────────── */
@@ -358,8 +367,9 @@ button:active:not(:disabled) {
 
 .stat-box {
   flex: 1 1 160px;
-  background: #f0f2f5;
-  border-radius: 10px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   padding: 1rem 1.15rem;
   display: flex;
   flex-direction: column;
@@ -369,18 +379,18 @@ button:active:not(:disabled) {
 .stat-label {
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #636e72;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  font-weight: 700;
 }
 
 .stat-value {
-  font-size: 1.4rem;
+  font-size: 1.55rem;
   font-weight: 700;
-  color: #2d3436;
+  color: var(--text);
 }
 
-/* ── Tables ─────────────────────────────────────────── */
+/* ── Tables: shared base ───────────────────────────── */
 
 .table-wrapper {
   width: 100%;
@@ -398,19 +408,19 @@ table {
 thead th {
   text-align: left;
   padding: 0.55rem 0.75rem;
-  background: #f8f9fa;
-  color: #636e72;
-  font-weight: 600;
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  font-weight: 700;
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-bottom: 2px solid #eee;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 tbody td {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #f0f2f5;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #edf2f7;
 }
 
 tbody tr:last-child td {
@@ -418,15 +428,15 @@ tbody tr:last-child td {
 }
 
 tbody tr:hover {
-  background: #fafbfc;
+  background: var(--row-hover);
 }
 
 .amount {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #1f2937;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--text);
 }
 
 #transactions-table thead th,
@@ -436,6 +446,66 @@ tbody tr:hover {
   top: 0;
   background: #f8fafc;
   z-index: 1;
+}
+
+/* ── Table panels: preview + transactions ──────────── */
+
+#preview-section .section-header,
+#transactions-section .section-header {
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#preview-section .table-wrapper,
+#transactions-section .table-wrapper {
+  max-height: 430px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+#preview-section table,
+#transactions-section table {
+  background: var(--surface);
+}
+
+#transactions-section .scope-label {
+  background: #edf2f7;
+  color: var(--text-soft);
+}
+
+#preview-section .table-wrapper::-webkit-scrollbar,
+#transactions-section .table-wrapper::-webkit-scrollbar {
+  width: 10px;
+}
+
+#preview-section .table-wrapper::-webkit-scrollbar-track,
+#transactions-section .table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#preview-section .table-wrapper::-webkit-scrollbar-thumb,
+#transactions-section .table-wrapper::-webkit-scrollbar-thumb {
+  background: #b6c2cf;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+#preview-table tbody td,
+#transactions-table tbody td {
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+}
+
+#preview-table tbody td:last-child,
+#transactions-table tbody td:last-child {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-soft);
 }
 
 /* ── Alerts ─────────────────────────────────────────── */
@@ -496,7 +566,7 @@ tbody tr:hover {
   color: #c0392b;
 }
 
-/* ── Section note ───────────────────────────────────── */
+/* ── Notes / empty states ───────────────────────────── */
 
 .section-note {
   font-size: 0.78rem;
@@ -504,8 +574,6 @@ tbody tr:hover {
   margin-top: -0.5rem;
   margin-bottom: 0.85rem;
 }
-
-/* ── Empty state ────────────────────────────────────── */
 
 .empty-state {
   font-size: 0.88rem;
