@@ -25,7 +25,6 @@ const previewCount = document.getElementById("preview-count");
 const previewTableBody = document.querySelector("#preview-table tbody");
 
 const dashboardArea = document.getElementById("dashboard-area");
-const importsSection = document.getElementById("imports-section");
 const importsListEl = document.getElementById("imports-list");
 const scopeLatestBtn = document.getElementById("scope-latest-btn");
 const scopeAllBtn = document.getElementById("scope-all-btn");
@@ -33,10 +32,10 @@ const scopeAllBtn = document.getElementById("scope-all-btn");
 const dashboardSection = document.getElementById("dashboard-section");
 const dashTotalTx = document.getElementById("dash-total-transactions");
 const dashTotalAmt = document.getElementById("dash-total-amount");
-const dashTopCategory = document.getElementById("dash-top-category")
+const dashTopCategory = document.getElementById("dash-top-category");
 const dashTopCategoryMeta = document.getElementById("dash-top-category-meta");
 const dashScopeLabel = document.getElementById("dash-scope-label");
-goryChartEl = document.getElementById("category-chart");
+const categoryChartEl = document.getElementById("category-chart");
 const alertsListEl = document.getElementById("alerts-list");
 
 const transactionsSection = document.getElementById("transactions-section");
@@ -85,6 +84,90 @@ function getScopeLabel() {
   }
   const imp = importsList.find((i) => i.id === currentScope);
   return imp ? getImportLabel(imp) : `Import #${currentScope}`;
+}
+
+function renderCategoryChart(categories) {
+  if (!categoryChartEl) return;
+
+  if (!categories || categories.length === 0) {
+    categoryChartEl.innerHTML = '<p class="empty-state">No category data found.</p>';
+    return;
+  }
+
+  const total = categories.reduce((sum, cat) => sum + cat.total_amount, 0);
+
+  if (total === 0) {
+    categoryChartEl.innerHTML = '<p class="empty-state">No category data found.</p>';
+    return;
+  }
+
+  const colors = [
+    "#1d4f91",
+    "#0f9f75",
+    "#f39c12",
+    "#c0392b",
+    "#8e44ad",
+    "#16a085",
+    "#d35400",
+    "#7f8c8d",
+    "#2c3e50",
+  ];
+
+  let cumulative = 0;
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+
+  const segments = categories
+    .map((cat, index) => {
+      const fraction = cat.total_amount / total;
+      const dash = fraction * circumference;
+      const gap = circumference - dash;
+      const offset = -cumulative * circumference;
+      cumulative += fraction;
+
+      return `
+        <circle
+          cx="90"
+          cy="90"
+          r="${radius}"
+          fill="none"
+          stroke="${colors[index % colors.length]}"
+          stroke-width="28"
+          stroke-dasharray="${dash} ${gap}"
+          stroke-dashoffset="${offset}"
+          transform="rotate(-90 90 90)"
+        />
+      `;
+    })
+    .join("");
+
+  const legend = categories
+    .map((cat, index) => {
+      const percent = Math.round((cat.total_amount / total) * 100);
+      return `
+        <div class="category-legend-item">
+          <span class="category-legend-label">
+            <span class="category-legend-dot" style="background:${colors[index % colors.length]}"></span>
+            ${cat.category_name}
+          </span>
+          <span class="category-legend-value">${percent}%</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  categoryChartEl.innerHTML = `
+    <div class="category-chart-layout">
+      <svg viewBox="0 0 180 180" class="category-chart-svg" aria-label="Spending by category chart">
+        <circle cx="90" cy="90" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="28" />
+        ${segments}
+        <circle cx="90" cy="90" r="42" fill="#ffffff" />
+      </svg>
+      <div class="category-chart-legend">
+        ${legend}
+      </div>
+    </div>
+  `;
 }
 
 // ── Scope controls ───────────────────────────────────────
@@ -235,7 +318,7 @@ async function loadImports() {
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     importsList = await res.json();
     renderImportsList();
-    dashboardArea.hidden = false // importsList.length === 0;
+    dashboardArea.hidden = false; // importsList.length === 0;
   } catch (err) {
     console.error("Failed to load imports:", err);
   }
@@ -301,9 +384,9 @@ async function handleDeleteImport(importId, label) {
       dashTopCategoryMeta.textContent = "";
       dashScopeLabel.textContent = "";
       txScopeLabel.textContent = "";
-      clearTable(categoryTableBody);
+      categoryChartEl.innerHTML = '<p class="empty-state">No category data found.</p>';
       clearTable(transactionsTableBody);
-      alertsListEl.innerHTML = '<p class="empty-state">No recurring charge anomalies found.</p>';
+      alertsListEl.innerHTML = '<p class="empty-state">No insights found.</p>';
       return;
     }
 
@@ -355,6 +438,8 @@ function renderDashboard(data) {
     dashTopCategoryMeta.textContent = "";
   }
   dashScopeLabel.textContent = getScopeLabel();
+
+  renderCategoryChart(data.spending_by_category);
 
   dashboardSection.hidden = false;
 
@@ -412,50 +497,6 @@ function renderTransactions(data) {
   });
 
   transactionsSection.hidden = false;
-}
-
-// ── Recurring alerts ─────────────────────────────────────
-
-async function loadRecurringAlerts() {
-  try {
-    const res = await fetch(`${API_BASE}/insights/recurring-anomalies`);
-    if (!res.ok) throw new Error(`Server error (${res.status})`);
-    const data = await res.json();
-    renderRecurringAlerts(data);
-  } catch (err) {
-    console.error("Failed to load recurring alerts:", err);
-  }
-}
-
-function renderRecurringAlerts(alerts) {
-  if (!alerts || alerts.length === 0) {
-    alertsListEl.innerHTML = '<p class="empty-state">No recurring charge anomalies found.</p>';
-    return;
-  }
-
-  alertsListEl.innerHTML = "";
-  alerts.forEach((alert) => {
-    const isDuplicate = alert.anomaly_type === "duplicate_same_month";
-    const item = document.createElement("div");
-    item.className = "alert-item" + (isDuplicate ? " alert-duplicate" : "");
-
-    const badgeLabel = isDuplicate ? "Duplicate" : "Price Change";
-    const badgeClass = isDuplicate ? "badge-duplicate" : "badge-price";
-
-    let amountInfo = "";
-    if (alert.anomaly_type === "price_increase") {
-      amountInfo = `${formatAmount(alert.previous_amount)} → ${formatAmount(alert.latest_amount)}`;
-    } else {
-      amountInfo = `${formatAmount(alert.latest_amount)} each`;
-    }
-
-    item.innerHTML =
-      `<div class="alert-merchant">${alert.merchant_name}<span class="alert-badge ${badgeClass}">${badgeLabel}</span></div>` +
-      `<div class="alert-message">${alert.message}</div>` +
-      `<div class="alert-amounts">${amountInfo}</div>`;
-
-    alertsListEl.appendChild(item);
-  });
 }
 
 // ── Initial load ─────────────────────────────────────────
