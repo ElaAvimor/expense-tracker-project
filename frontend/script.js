@@ -33,6 +33,8 @@ const scopeAllBtn = document.getElementById("scope-all-btn");
 const dashboardSection = document.getElementById("dashboard-section");
 const dashTotalTx = document.getElementById("dash-total-transactions");
 const dashTotalAmt = document.getElementById("dash-total-amount");
+const dashTopCategory = document.getElementById("dash-top-category")
+const dashTopCategoryMeta = document.getElementById("dash-top-category-meta");
 const dashScopeLabel = document.getElementById("dash-scope-label");
 const categoryTableBody = document.querySelector("#category-table tbody");
 
@@ -296,6 +298,8 @@ async function handleDeleteImport(importId, label) {
 
       dashTotalTx.textContent = "0";
       dashTotalAmt.textContent = "0";
+      dashTopCategory.textContent = "—";
+      dashTopCategoryMeta.textContent = "";
       dashScopeLabel.textContent = "";
       txScopeLabel.textContent = "";
       clearTable(categoryTableBody);
@@ -319,7 +323,7 @@ async function handleDeleteImport(importId, label) {
 // ── Load scoped dashboard + transactions ─────────────────
 
 async function loadScopedData() {
-  await Promise.all([loadDashboard(), loadTransactions(), loadRecurringAlerts()]);
+  await Promise.all([loadDashboard(), loadTransactions()]);
 }
 
 async function loadDashboard() {
@@ -334,6 +338,7 @@ async function loadDashboard() {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     const data = await res.json();
+    console.log("dashboard data", data);
     renderDashboard(data);
   } catch (err) {
     console.error("Failed to load dashboard:", err);
@@ -343,6 +348,13 @@ async function loadDashboard() {
 function renderDashboard(data) {
   dashTotalTx.textContent = data.total_transactions;
   dashTotalAmt.textContent = formatAmount(data.total_amount);
+  if (data.top_category) {
+    dashTopCategory.textContent = data.top_category.category_name;
+    dashTopCategoryMeta.textContent = `${formatAmount(data.top_category.total_amount)}  •  ${data.top_category.percent_of_spending}% of spending`;
+  } else {
+    dashTopCategory.textContent = "—";
+    dashTopCategoryMeta.textContent = "";
+  }
   dashScopeLabel.textContent = getScopeLabel();
 
   clearTable(categoryTableBody);
@@ -355,6 +367,25 @@ function renderDashboard(data) {
   });
 
   dashboardSection.hidden = false;
+
+  alertsListEl.innerHTML = "";  // reset the card before rendering the current data fresh
+
+  if (data.unusual_high_transactions && data.unusual_high_transactions.length > 0) {
+    data.unusual_high_transactions.forEach((tx) => {
+      const item = document.createElement("div");
+      item.className = "alert-item";
+
+      item.innerHTML = `
+        <div class="alert-merchant">${tx.merchant_name}</div>
+        <div class="alert-amounts">${formatAmount(tx.amount)}</div>
+        <div class="alert-message">High transaction • ${tx.transaction_date}</div>
+      `;
+
+      alertsListEl.appendChild(item);
+    });
+  } else {
+    alertsListEl.innerHTML = '<p class="empty-state">No insights found.</p>';
+  }
 }
 
 async function loadTransactions() {

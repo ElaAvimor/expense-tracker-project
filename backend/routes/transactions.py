@@ -48,6 +48,7 @@ def get_transactions(import_id: int | None = None, db: Session = Depends(get_db)
 def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Session = Depends(get_db)):
     scope = "all"
     target_import_id = None
+    top_category = None
 
     if import_id is not None:
         scope = "import"
@@ -58,6 +59,7 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
         if latest:
             target_import_id = latest.id
         else:
+            #  Dashboard mode is 'latest' but there are no imported files in the db
             return {
                 "total_transactions": 0,
                 "total_amount": 0,
@@ -66,9 +68,10 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
                 "import_id": None,
             }
 
-    tx_count_q = db.query(func.count(Transaction.id))
-    amt_q = db.query(func.sum(Transaction.amount))
-    cat_q = (
+    transactions_query = db.query(Transaction)
+    transaction_count_query = db.query(func.count(Transaction.id))
+    total_amount_query = db.query(func.sum(Transaction.amount))
+    category_total_amount_query = (
         db.query(
             Category.name.label("category_name"),
             func.sum(Transaction.amount).label("total_amount"),
@@ -76,14 +79,55 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
         .join(Category, Transaction.category_id == Category.id)
     )
 
+    #  A specific import is selected to be shown
     if target_import_id is not None:
-        tx_count_q = tx_count_q.filter(Transaction.import_id == target_import_id)
-        amt_q = amt_q.filter(Transaction.import_id == target_import_id)
-        cat_q = cat_q.filter(Transaction.import_id == target_import_id)
+        transaction_count_query = transaction_count_query.filter(Transaction.import_id == target_import_id)
+        total_amount_query = total_amount_query.filter(Transaction.import_id == target_import_id)
+        category_total_amount_query = category_total_amount_query.filter(Transaction.import_id == target_import_id)
+        transactions_query = transactions_query.filter(Transaction.import_id == target_import_id)
 
-    total_transactions = tx_count_q.scalar()
-    total_amount = amt_q.scalar() or 0
-    spending_rows = cat_q.group_by(Category.name).all()
+    total_transactions = transaction_count_query.scalar()
+    total_amount = total_amount_query.scalar() or 0
+    spending_rows = category_total_amount_query.group_by(Category.name).all()
+
+    if spending_rows:
+        top_row = max(spending_rows, key=lambda row: row.total_amount)
+        percent_spending = 0 if total_amount == 0 else round((top_row.total_amount / total_amount) * 100)
+        top_category = {
+            "category_name": top_row.category_name,
+            "total_amount": top_row.total_amount,
+            "percent_of_spending": percent_spending
+        }
+
+    high_transactions_query = (
+        db.query(
+            Merchant.name.label("merchant_name"),
+            Transaction.amount.label("amount"),
+            Transaction.transaction_date.label("transaction_date"),
+        )
+        .join(Merchant, Transaction.merchant_id == Merchant.id)
+    )
+
+    if target_import_id is not None:
+        high_transactions_query = high_transactions_query.filter(
+            Transaction.import_id == target_import_id
+        )
+
+    high_transactions_rows = (
+        high_transactions_query
+        .order_by(Transaction.amount.desc())
+        .limit(3)
+        .all()
+    )
+
+    unusual_high_transactions = [
+        {
+            "merchant_name": row.merchant_name,
+            "amount": row.amount,
+            "transaction_date": row.transaction_date,
+        }
+        for row in high_transactions_rows
+    ]
 
     return {
         "total_transactions": total_transactions,
@@ -97,4 +141,6 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
         ],
         "scope": scope,
         "import_id": target_import_id,
+        "top_category": top_category,
+        "unusual_high_transactions": unusual_high_transactions,
     }

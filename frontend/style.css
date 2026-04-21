@@ -390,6 +390,19 @@ button:active:not(:disabled) {
   color: var(--text);
 }
 
+.stat-subvalue {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin-top: 0.2rem;
+  line-height: 1.35;
+}
+
+#dash-top-category {
+  font-size: 1.05rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
 /* ── Tables: shared base ───────────────────────────── */
 
 .table-wrapper {
@@ -513,7 +526,7 @@ tbody tr:hover {
 .alert-item {
   padding: 0.7rem 0.85rem;
   border-radius: 8px;
-  background: #fff8e1;
+  background: #f8f4e6;
   border-left: 3px solid #f39c12;
   font-size: 0.85rem;
 }
@@ -540,8 +553,10 @@ tbody tr:hover {
 }
 
 .alert-amounts {
-  font-size: 0.78rem;
-  color: #b2bec3;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c0392b;
+  margin-bottom: 0.2rem;
 }
 
 .alert-badge {
@@ -564,6 +579,32 @@ tbody tr:hover {
 .alert-badge.badge-duplicate {
   background: #fadbd8;
   color: #c0392b;
+}
+
+#alerts-list {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  background: #fcfdff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+#alerts-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+#alerts-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#alerts-list::-webkit-scrollbar-thumb {
+  background: #b6c2cf;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 /* ── Notes / empty states ───────────────────────────── */
