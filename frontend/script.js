@@ -36,8 +36,7 @@ const dashTotalAmt = document.getElementById("dash-total-amount");
 const dashTopCategory = document.getElementById("dash-top-category")
 const dashTopCategoryMeta = document.getElementById("dash-top-category-meta");
 const dashScopeLabel = document.getElementById("dash-scope-label");
-const categoryTableBody = document.querySelector("#category-table tbody");
-
+goryChartEl = document.getElementById("category-chart");
 const alertsListEl = document.getElementById("alerts-list");
 
 const transactionsSection = document.getElementById("transactions-section");
@@ -356,15 +355,6 @@ function renderDashboard(data) {
     dashTopCategoryMeta.textContent = "";
   }
   dashScopeLabel.textContent = getScopeLabel();
-
-  clearTable(categoryTableBody);
-  data.spending_by_category.forEach((cat) => {
-    const row = categoryTableBody.insertRow();
-    row.insertCell().textContent = cat.category_name;
-    const amtCell = row.insertCell();
-    amtCell.textContent = formatAmount(cat.total_amount);
-    amtCell.className = "amount";
-  });
 
   dashboardSection.hidden = false;
 
