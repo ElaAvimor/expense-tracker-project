@@ -102,15 +102,15 @@ function renderCategoryChart(categories) {
   }
 
   const colors = [
-    "#1d4f91",
-    "#0f9f75",
-    "#f39c12",
-    "#c0392b",
-    "#8e44ad",
-    "#16a085",
-    "#d35400",
-    "#7f8c8d",
-    "#2c3e50",
+    "#7da6d9",
+    "#7fc8a9",
+    "#f2c66d",
+    "#e88c8c",
+    "#b39ddb",
+    "#7fc9c6",
+    "#f2a65a",
+    "#a8b4c1",
+    "#6b7c93",
   ];
 
   let cumulative = 0;
@@ -132,7 +132,7 @@ function renderCategoryChart(categories) {
           r="${radius}"
           fill="none"
           stroke="${colors[index % colors.length]}"
-          stroke-width="28"
+          stroke-width="30"
           stroke-dasharray="${dash} ${gap}"
           stroke-dashoffset="${offset}"
           transform="rotate(-90 90 90)"
@@ -161,7 +161,7 @@ function renderCategoryChart(categories) {
       <svg viewBox="0 0 180 180" class="category-chart-svg" aria-label="Spending by category chart">
         <circle cx="90" cy="90" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="28" />
         ${segments}
-        <circle cx="90" cy="90" r="42" fill="#ffffff" />
+        <circle cx="90" cy="90" r="20" fill="#ffffff" />
       </svg>
       <div class="category-chart-legend">
         ${legend}
@@ -420,7 +420,6 @@ async function loadDashboard() {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     const data = await res.json();
-    console.log("dashboard data", data);
     renderDashboard(data);
   } catch (err) {
     console.error("Failed to load dashboard:", err);
