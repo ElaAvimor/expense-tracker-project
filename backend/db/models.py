@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from datetime import datetime, timezone
-from db.database import Base # The parent class for all the models
+from db.database import Base  # The parent class for all the models
 
 
 class Import(Base):

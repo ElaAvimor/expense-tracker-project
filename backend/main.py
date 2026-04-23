@@ -25,11 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Base.metadata.create_all(bind=engine) # create all the tables in the database (we do this here because we want to create the tables before the app starts)
+# create all the tables in the database (we do this here because we want to create the tables before the app starts)
+Base.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def read_root():
     return {"message": "Backend is running"}
+
 
 app.include_router(imports_router)
 app.include_router(transactions_router)

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from services.excel_parser import parse_transactions_from_file
-from services.import_transactions import save_parsed_transactions
+from services.save_transactions import save_parsed_transactions
 from services.file_hash import calculate_file_hash
 from db.dependencies import get_db
 from db.models import Import, Transaction

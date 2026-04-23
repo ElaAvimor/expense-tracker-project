@@ -68,7 +68,6 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
                 "import_id": None,
             }
 
-    transactions_query = db.query(Transaction)
     transaction_count_query = db.query(func.count(Transaction.id))
     total_amount_query = db.query(func.sum(Transaction.amount))
     category_total_amount_query = (
@@ -84,7 +83,6 @@ def get_dashboard(mode: str = "latest", import_id: int | None = None, db: Sessio
         transaction_count_query = transaction_count_query.filter(Transaction.import_id == target_import_id)
         total_amount_query = total_amount_query.filter(Transaction.import_id == target_import_id)
         category_total_amount_query = category_total_amount_query.filter(Transaction.import_id == target_import_id)
-        transactions_query = transactions_query.filter(Transaction.import_id == target_import_id)
 
     total_transactions = transaction_count_query.scalar()
     total_amount = total_amount_query.scalar() or 0

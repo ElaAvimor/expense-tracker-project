@@ -1,4 +1,6 @@
 console.log("SCRIPT LOADED");
+
+// ── Connect to BE ────────────────────────────────────────────────
 const API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8000"
@@ -202,6 +204,7 @@ fileInput.addEventListener("change", async () => {
 });
 
 confirmBtn.addEventListener("click", handleConfirm);
+
 closePreviewBtn.addEventListener("click", () => {
   previewData = null;
   previewSection.hidden = true;
