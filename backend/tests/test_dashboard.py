@@ -140,4 +140,3 @@ def test_dashboard_with_latest_scope(client, db_session) -> None:
             },
         ]
     }
-
