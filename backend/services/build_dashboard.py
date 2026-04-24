@@ -142,7 +142,7 @@ def get_dashboard_data(db: Session, mode: str = "latest", import_id: int | None 
     if should_return_empty:
         return _empty_dashboard_response()
 
-    total_transactions, total_amount, spending_per_category = _get_dashboard_totals_and_spending(db, import_id)
+    total_transactions, total_amount, spending_per_category = _get_dashboard_totals_and_spending(db, target_import_id)
     top_category = _get_top_category(spending_per_category, total_amount)
     unusual_high_transactions = _get_unusual_high_transactions(db, import_id)
 
