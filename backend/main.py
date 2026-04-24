@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from routes.dashboard import router as dashboard_router
+from routes.handle_import import router as handle_import_router
+from routes.insights import router as insights_router
 from routes.list_imports import router as imports_router
 from routes.transactions import router as transactions_router
-from routes.insights import router as insights_router
+
 from db.database import engine, Base
-from db import models
 
 
 app = FastAPI() # creates the app
@@ -34,6 +37,9 @@ def read_root():
     return {"message": "Backend is running"}
 
 
+app.include_router(dashboard_router)
+app.include_router(handle_import_router)
+app.include_router(insights_router)
 app.include_router(imports_router)
 app.include_router(transactions_router)
-app.include_router(insights_router)
+
