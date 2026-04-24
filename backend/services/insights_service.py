@@ -4,34 +4,47 @@ from db.models import Transaction, Merchant
 from sqlalchemy.orm import Session
 
 
-def _find_baseline_amount(positive_txs: list[dict]) -> float | None:
-    """Find the positive amount that appears in at least 3 different months.
-
+def _find_repeated_amount(positive_transactions: list[dict]) -> float | None:
+    """
+    Find the positive amount that appears in at least 3 different months.
     If multiple amounts qualify, pick the one with the most months,
     breaking ties by the lower amount (the established recurring charge).
+    :param positive_transactions: a list of all positive transactions to compare
+    :return: The lowest amount that was repeated in the most number of months (at least 3)
     """
-    amount_months: dict[float, set[tuple[int, int]]] = defaultdict(set)
-    for t in positive_txs:
-        month_key = (t["date"].year, t["date"].month)
-        amount_months[t["amount"]].add(month_key)
+    # amount_appearances = {100.0, {(2026, 04), (2026, 05)}
+    amount_appearances: dict[float, set[tuple[int, int]]] = defaultdict(set)
+    for transaction in positive_transactions:
+        year_and_month = (transaction["date"].year, transaction["date"].month)
+        amount_appearances[transaction["amount"]].add(year_and_month)
 
+    # Amounts that appeared in at least 3 different months
     candidates = [
         (amount, len(months))
-        for amount, months in amount_months.items()
+        for amount, months in amount_appearances.items()
         if len(months) >= 3
     ]
     if not candidates:
         return None
 
+    # Pick the candidate amount with the most months and lowest amount and then return that amount
     candidates.sort(key=lambda c: (-c[1], c[0]))
     return candidates[0][0]
 
 
-def _detect_price_increase(merchant_name: str, baseline: float, positive_txs: list[dict]) -> dict | None:
-    higher = [t for t in positive_txs if t["amount"] > baseline]
-    if not higher:
+def _detect_price_increase(merchant_name: str, baseline: float, positive_transactions: list[dict]) -> dict | None:
+    """
+    Get positive transactions and a base and find the latest recurring charge that had a price increase
+    :param merchant_name:
+    :param baseline:
+    :param positive_transactions:
+    :return:
+    """
+    transaction_higher_than_base = [t for t in positive_transactions if t["amount"] > baseline]
+    if not transaction_higher_than_base:
         return None
-    latest = higher[-1]
+
+    latest = transaction_higher_than_base[-1]
     return {
         "merchant_name": merchant_name,
         "latest_amount": latest["amount"],
@@ -41,9 +54,16 @@ def _detect_price_increase(merchant_name: str, baseline: float, positive_txs: li
     }
 
 
-def _detect_duplicate_same_month(merchant_name: str, baseline: float, txs: list[dict]) -> dict | None:
+def _detect_duplicate_same_month(merchant_name: str, baseline: float, transactions: list[dict]) -> dict | None:
+    """
+    Get a list of transactions, a merchant and a baseline and check if there are any duplicates
+    :param merchant_name: The name of merchant in the transaction
+    :param baseline: The amount to be duplicated
+    :param transactions: The list of transactions to check
+    :return: Duplicated transactions if found
+    """
     by_month: dict[tuple[int, int], list[float]] = defaultdict(list)
-    for t in txs:
+    for t in transactions:
         month_key = (t["date"].year, t["date"].month)
         by_month[month_key].append(t["amount"])
 
@@ -70,7 +90,12 @@ def _detect_duplicate_same_month(merchant_name: str, baseline: float, txs: list[
 
 
 def find_recurring_anomalies(db: Session) -> list[dict]:
-    rows = (
+    """
+    Query the db and find any transactions that appear at least 3 times with the same merchant and amount
+    :param db: The session for querying the db
+    :return: List of recurring anomalies
+    """
+    transactions = (
         db.query(
             Transaction.transaction_date,
             Transaction.amount,
@@ -79,31 +104,35 @@ def find_recurring_anomalies(db: Session) -> list[dict]:
         .join(Merchant, Transaction.merchant_id == Merchant.id)
         .all()
     )
+    transactions_by_merchant = defaultdict(list)
+    anomalies = []
 
-    by_merchant: dict[str, list[dict]] = defaultdict(list)
-    for row in rows:
-        by_merchant[row.merchant_name].append({
+    # Group transactions by merchant
+    for row in transactions:
+        transactions_by_merchant[row.merchant_name].append({
             "date": datetime.strptime(row.transaction_date, "%d-%m-%Y"),
             "amount": row.amount,
         })
 
-    for txs in by_merchant.values():
-        txs.sort(key=lambda t: t["date"])
+    # For each merchant, sort its transactions by date
+    for transactions in transactions_by_merchant.values():
+        transactions.sort(key=lambda t: t["date"])
 
-    anomalies = []
+    for merchant_name, transaction in transactions_by_merchant.items():
+        positive_transactions = [t for t in transaction if t["amount"] > 0]
 
-    for merchant_name, txs in by_merchant.items():
-        positive_txs = [t for t in txs if t["amount"] > 0]
-
-        baseline = _find_baseline_amount(positive_txs)
-        if baseline is None:
+        # Find the amount that was repeated in the most months (at least 3), if exists
+        repeated = _find_repeated_amount(positive_transactions)
+        if repeated is None:
             continue
 
-        price_inc = _detect_price_increase(merchant_name, baseline, positive_txs)
-        if price_inc:
-            anomalies.append(price_inc)
+        # Find a repeated amount that had a charge increase, if exists
+        price_increase = _detect_price_increase(merchant_name, repeated, positive_transactions)
+        if price_increase:
+            anomalies.append(price_increase)
 
-        duplicate = _detect_duplicate_same_month(merchant_name, baseline, txs)
+        # Find a repeated amount that appeared more than once in the same month, if exists
+        duplicate = _detect_duplicate_same_month(merchant_name, repeated, transaction)
         if duplicate:
             anomalies.append(duplicate)
 
