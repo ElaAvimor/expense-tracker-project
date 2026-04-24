@@ -210,6 +210,7 @@ closePreviewBtn.addEventListener("click", () => {
   previewSection.hidden = true;
   confirmBtn.disabled = true;
   clearTable(previewTableBody);
+  fileInput.value = "";
   hideStatus();
 });
 
@@ -423,13 +424,18 @@ async function loadDashboard() {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     const data = await res.json();
-    renderDashboard(data);
+
+    const anomaliesRes = await fetch(`${API_BASE}/insights/recurring-anomalies`);
+    if (!anomaliesRes.ok) throw new Error(`Server error (${anomaliesRes.status})`);
+    const anomalies = await anomaliesRes.json();
+
+    renderDashboard(data, anomalies);
   } catch (err) {
     console.error("Failed to load dashboard:", err);
   }
 }
 
-function renderDashboard(data) {
+function renderDashboard(data, anomalies = []) {
   dashTotalTx.textContent = data.total_transactions;
   dashTotalAmt.textContent = formatAmount(data.total_amount);
   if (data.top_category) {
@@ -447,7 +453,12 @@ function renderDashboard(data) {
 
   alertsListEl.innerHTML = "";  // reset the card before rendering the current data fresh
 
-  if (data.unusual_high_transactions && data.unusual_high_transactions.length > 0) {
+  const hasHighTransactions =
+    data.unusual_high_transactions && data.unusual_high_transactions.length > 0;
+
+  const hasAnomalies = anomalies && anomalies.length > 0;
+
+  if (hasHighTransactions) {
     data.unusual_high_transactions.forEach((tx) => {
       const item = document.createElement("div");
       item.className = "alert-item";
@@ -460,7 +471,26 @@ function renderDashboard(data) {
 
       alertsListEl.appendChild(item);
     });
-  } else {
+  }
+
+  if (hasAnomalies) {
+    anomalies.forEach((anomaly) => {
+      const item = document.createElement("div");
+      item.className = "alert-item alert-duplicate";
+
+      item.innerHTML = `
+        <div class="alert-merchant">${anomaly.merchant_name}</div>
+        <div class="alert-amounts">
+          ${formatAmount(anomaly.previous_amount)} → ${formatAmount(anomaly.latest_amount)}
+        </div>
+        <div class="alert-message">${anomaly.message}</div>
+      `;
+
+      alertsListEl.appendChild(item);
+    });
+  }
+
+  if (!hasHighTransactions && !hasAnomalies) {
     alertsListEl.innerHTML = '<p class="empty-state">No insights found.</p>';
   }
 }
