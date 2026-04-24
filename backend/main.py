@@ -10,7 +10,7 @@ from routes.transactions import router as transactions_router
 from db.database import engine, Base
 
 
-app = FastAPI() # creates the app
+app = FastAPI()  # creates the app
 
 # since frontend and backend run on different ports (origins),
 # CORS middleware is needed to allow the frontend to make requests to the backend
