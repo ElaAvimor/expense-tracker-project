@@ -74,6 +74,38 @@ def test_recurring_anomalies_detects_price_increase(client, db_session) -> None:
         }
     ]
 
-def test_recurring_anomalies_returns_empty_when_no_repeated_charge():
-    pass
+
+def test_recurring_anomalies_returns_empty_when_no_repeated_charge(client, db_session) -> None:
+    """
+    Check that no recurring anomalies appear when there is no repeated charge
+    :param client: The test client, injected by pytest.
+    :param db_session: The database session, injected by pytest.
+    :return: None
+    """
+    imported_file = Import(
+        id=1,
+        file_name="test.xlsx",
+        file_hash="123456",
+        imported_at=datetime.now(timezone.utc),
+    )
+    merchant = Merchant(id=1, name="Netflix")
+    category = Category(id=1, name="Entertainment")
+
+    transaction = Transaction(
+        amount=54.9,
+        category_id=1,
+        merchant_id=1,
+        import_id=1,
+        transaction_date="10-01-2026",
+        currency="ILS",
+        description_raw="Netflix January",
+    )
+
+    db_session.add_all([imported_file, merchant, category, transaction])
+    db_session.commit()
+
+    response = client.get("/insights/recurring-anomalies")
+
+    assert response.status_code == 200
+    assert response.json() == []
 
